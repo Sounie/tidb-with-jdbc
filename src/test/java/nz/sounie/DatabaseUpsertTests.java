@@ -62,11 +62,13 @@ class DatabaseUpsertTests {
         Collections.shuffle(upserters);
 
         // Set up a concurrent executor to perform the upsert calls concurrently
-        try (ExecutorService executorService =  Executors.newFixedThreadPool(NUMBER_OF_UPSERTERS)) {
+        try (ExecutorService executorService =  Executors.newFixedThreadPool(NUMBER_OF_UPSERTERS,
+            // Trying out use of VirtualThreads
+                    (Runnable task) -> Thread.ofVirtual()
+                                .unstarted(task)
+                )) {
             for (Upserter upserter : upserters) {
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
+                executorService.submit(() -> {
                         // Sleeping to allow ExecutorService to accumulate upserters before they run
                         try {
                             Thread.sleep(200L);
@@ -80,7 +82,7 @@ class DatabaseUpsertTests {
 
                         upserter.closeConnection();
                     }
-                });
+                );
             }
         }
 

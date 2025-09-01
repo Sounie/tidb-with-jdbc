@@ -65,7 +65,8 @@ class DatabaseUpsertTests {
         try (ExecutorService executorService =  Executors.newFixedThreadPool(NUMBER_OF_UPSERTERS,
             // Trying out use of VirtualThreads
                     (Runnable task) -> Thread.ofVirtual()
-                                .unstarted(task)
+                            .name("upserter-", 0L)
+                            .unstarted(task)
                 )) {
             for (Upserter upserter : upserters) {
                 executorService.submit(() -> {
